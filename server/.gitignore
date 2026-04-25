@@ -31,9 +31,6 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
-
 # vercel
 .vercel
 
@@ -45,6 +42,7 @@ yarn.lock
 package-lock.json
 
 .env
-.env.*
+.env.local
+.env.production
 
 openux-ai-firebase.json

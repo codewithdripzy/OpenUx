@@ -10,6 +10,6 @@ We only support the latest version of OpenUx. Please ensure you are running the 
 
 ## Reporting a Vulnerability
 
-We take the security of OpenUx seriously. If you believe you have found a security vulnerability, please do not open a public issue. Instead, please report it via email to [INSERT EMAIL ADDRESS].
+We take the security of OpenUx seriously. If you believe you have found a security vulnerability, please do not open a public issue. Instead, please report it via email to hello@orello.space.
 
 We will acknowledge your report within 48 hours and provide a timeline for a fix if necessary. We ask that you follow responsible disclosure practices and give us time to address the issue before making it public.

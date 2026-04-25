@@ -6,6 +6,14 @@ import { z } from 'zod';
 
 export class AIService {
     static getModel(provider: string, modelId: string) {
+        if (modelId.startsWith('gpt')) {
+            return openai(modelId);
+        } else if (modelId.startsWith('claude')) {
+            return anthropic(modelId);
+        } else if (modelId.startsWith('gemini')) {
+            return google(modelId);
+        }
+
         switch (provider.toLowerCase()) {
             case 'google':
                 return google(modelId);
