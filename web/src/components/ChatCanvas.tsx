@@ -285,7 +285,7 @@ function ChatCanvas({ activeChat, nodes, activeNodes, processingNodeIds, thinkin
                                 <Zap size={13} className="text-emerald-500" />
                             </div>
                             <div className='flex mr-2 text-white/90 font-semibold text-[13px] tracking-tight'>
-                                {node.title}
+                                {node.title || node.pageName}
                             </div>
                         </div>
                         <div className='flex items-center justify-center gap-2'>
@@ -372,15 +372,51 @@ function ChatCanvas({ activeChat, nodes, activeNodes, processingNodeIds, thinkin
                                     </div>
                                 )}
                             </div> : (
-                                <div className="flex flex-col items-center justify-center gap-4 h-[180px]">
-                                    <div className="size-12 bg-white/[0.02] rounded-full flex items-center justify-center border border-white/5">
-                                        <MessageCircleDashed size={24} className="text-white/20" />
-                                    </div>
-                                    <div className="flex flex-col gap-1 items-center text-center">
-                                        <div className="text-[14px] text-white/90 font-medium">No conversation yet</div>
-                                        <div className="text-[11px] text-white/30 max-w-[200px] leading-relaxed">Ask a question or describe a change to this node to begin.</div>
-                                    </div>
-                                </div>
+                                <>
+                                    {node.pageSlug && (
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Route</div>
+                                            <div className="text-[12px] text-blue-400 font-mono bg-blue-500/5 px-2 py-1 rounded w-fit">{node.pageSlug}</div>
+                                        </div>
+                                    )}
+                                    {node.prompt && (
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Design Prompt</div>
+                                            <p className="text-[12px] text-white/70 leading-relaxed italic border-l-2 border-white/10 pl-3">{node.prompt}</p>
+                                        </div>
+                                    )}
+                                    {node.rules && node.rules.length > 0 && (
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Rules</div>
+                                            <ul className="flex flex-col gap-1 ml-4 list-disc">
+                                                {node.rules.map((rule, i) => (
+                                                    <li key={i} className="text-[11px] text-white/50">{rule}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    {node.actions && node.actions.length > 0 && (
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Actions</div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {node.actions.map((action, i) => (
+                                                    <span key={i} className="text-[10px] bg-white/5 text-white/60 px-2 py-1 rounded-md border border-white/5">{action}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {(!node.messages || node.messages.length === 0) && !node.pageSlug && !node.prompt && (
+                                        <div className="flex flex-col items-center justify-center gap-4 h-[180px]">
+                                            <div className="size-12 bg-white/[0.02] rounded-full flex items-center justify-center border border-white/5">
+                                                <MessageCircleDashed size={24} className="text-white/20" />
+                                            </div>
+                                            <div className="flex flex-col gap-1 items-center text-center">
+                                                <div className="text-[14px] text-white/90 font-medium">No conversation yet</div>
+                                                <div className="text-[11px] text-white/30 max-w-[200px] leading-relaxed">Ask a question or describe a change to this node to begin.</div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>}

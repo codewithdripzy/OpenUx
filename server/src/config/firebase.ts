@@ -6,10 +6,21 @@ import path from 'path';
 if (!admin.apps.length) {
     let serviceAccount = null;
 
-    // 1. Try from Environment Variable (for production)
+    // 1. Try from Environment Variable (for production or explicit path)
     if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
         try {
-            serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+            const envVal = process.env.FIREBASE_SERVICE_ACCOUNT_JSON.trim();
+            if (envVal.startsWith('{')) {
+                serviceAccount = JSON.parse(envVal);
+            } else {
+                const filePath = path.resolve(process.cwd(), envVal);
+                if (fs.existsSync(filePath)) {
+                    const fileContent = fs.readFileSync(filePath, 'utf8');
+                    serviceAccount = JSON.parse(fileContent);
+                } else {
+                    console.warn(`Firebase service account file not found at: ${filePath}`);
+                }
+            }
         } catch (e) {
             console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON:", e);
         }

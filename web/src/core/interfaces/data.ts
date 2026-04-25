@@ -1,12 +1,18 @@
 export interface NodeData {
     id: string;
     uid: string;
-    title: string;
+    title?: string;
+    pageName?: string;
+    pageSlug?: string;
+    prompt?: string;
+    rules?: string[];
+    actions?: string[];
+    endGoal?: string;
     context?: string;
     position: { x: number; y: number };
-    parents: NodeRef[];
+    parents?: NodeRef[];
     connections: NodeRef[];
-    messages: MessageData[];
+    messages?: MessageData[];
     updatedAt: string | Date;
     metadata?: {
         isStart?: boolean;

@@ -42,10 +42,10 @@ function WorkspaceContent() {
         setProcessingNodeIds(["initial"]);
         try {
             const data = await projectService.generateAI(promptText, "google", selectedAgent);
-            setProject(data);
-            if (data.nodes && data.nodes.length > 0) {
-                setExpandedNodes({ [data.nodes[0].uid]: true });
-                setActiveNodes([data.nodes[0].uid]);
+            setProject(data.project);
+            if (data.project.nodes && data.project.nodes.length > 0) {
+                setExpandedNodes({ [data.project.nodes[0].uid]: true });
+                setActiveNodes([data.project.nodes[0].uid]);
             }
         } catch (error) {
             console.error("Error generating project:", error);
@@ -92,7 +92,7 @@ function WorkspaceContent() {
 
         try {
             const data = await projectService.generateAI(payload.prompt, "google", selectedAgent, project.uid);
-            setProject(data);
+            setProject(data.project);
         } catch (error) {
             toast.error("Failed to send message", "Your request couldn't be processed. Please try again.");
             setMessage(originalMessage); // Restore on error
