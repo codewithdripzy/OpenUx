@@ -69,6 +69,3 @@ jobs:
 
       - name: Clean up SSH key
         run: rm ec2key.pem
-
-        # scp -i "OpenUx.pem" -C -r dist package.json .gitignore README.md \
-        # ubuntu@ssh -i "OpenUx.pem" ubuntu@ec2-3-120-205-194.eu-central-1.compute.amazonaws.com:~/startshop-temp/
