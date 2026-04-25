@@ -61,6 +61,7 @@ export const metadata: Metadata = {
 };
 
 
+import { Analytics } from "@vercel/analytics/next";
 import { ToastProvider } from "@/hooks/use-toast";
 
 // JSON-LD Structured Data for OpenUx
@@ -117,6 +118,7 @@ export default function RootLayout({
         <ToastProvider>
           <SidebarProvider>
             {children}
+            <Analytics />
           </SidebarProvider>
         </ToastProvider>
       </body>

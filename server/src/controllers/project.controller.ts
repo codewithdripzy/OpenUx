@@ -109,16 +109,60 @@ If existing context is provided, evolve or modify the workflow according to the 
 
         const { nodes: generatedNodes } = await AIService.generateStructured(systemPrompt, nodeSchema, provider, modelId);
 
-        // Assign positions and uids
-        const nodes = generatedNodes.map((node: any, index: number) => ({
-            ...node,
-            uid: node.id,
-            position: {
-                x: 100 + (index % 3) * 450,
-                y: 100 + Math.floor(index / 3) * 400
-            },
-            updatedAt: new Date()
-        }));
+        // Assign positions and uids with a more organized layout logic
+        const nodeMap = new Map();
+        generatedNodes.forEach((n: any) => nodeMap.set(n.id, n));
+
+        const levels: Record<string, number> = {};
+        const visited = new Set();
+
+        const calculateLevels = (nodeId: string, level: number) => {
+            if (visited.has(nodeId)) {
+                levels[nodeId] = Math.max(levels[nodeId] || 0, level);
+                return;
+            }
+            visited.add(nodeId);
+            levels[nodeId] = level;
+            
+            const node = nodeMap.get(nodeId);
+            if (node && node.connections) {
+                node.connections.forEach((connId: string) => calculateLevels(connId, level + 1));
+            }
+        };
+
+        // Start from potential roots (nodes with no incoming connections)
+        const allConnections = new Set(generatedNodes.flatMap((n: any) => n.connections || []));
+        const roots = generatedNodes.filter((n: any) => !allConnections.has(n.id));
+        
+        if (roots.length === 0 && generatedNodes.length > 0) {
+            calculateLevels(generatedNodes[0].id, 0);
+        } else {
+            roots.forEach((root: any) => calculateLevels(root.id, 0));
+        }
+
+        // Handle any nodes that might have been missed (disconnected components)
+        generatedNodes.forEach((n: any) => {
+            if (levels[n.id] === undefined) calculateLevels(n.id, 0);
+        });
+
+        // Group by level for vertical positioning
+        const levelGroups: Record<number, number> = {};
+
+        const nodes = generatedNodes.map((node: any) => {
+            const level = levels[node.id] || 0;
+            const verticalIndex = levelGroups[level] || 0;
+            levelGroups[level] = verticalIndex + 1;
+
+            return {
+                ...node,
+                uid: node.id,
+                position: {
+                    x: 100 + level * 450,
+                    y: 100 + verticalIndex * 400
+                },
+                updatedAt: new Date()
+            };
+        });
 
         // If we have a projectId, update it. Otherwise, create a new one.
         if (existingProject) {

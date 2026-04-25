@@ -41,6 +41,7 @@ export interface AgentData {
 export interface ChatData {
     uid: string;
     title: string;
+    prompt?: string;
     nodes: NodeData[];
 }
 

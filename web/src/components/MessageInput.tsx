@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { HiSparkles } from "react-icons/hi";
 import { agentService } from "@/services/agent.service";
-import { AgentData, PromptData } from "@/core/interfaces/data";
+import { AgentData, PromptData, NodeData } from "@/core/interfaces/data";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Paperclip, SendHorizonal, ChevronUp, Globe, X, FileText, Image as ImageIcon, Check } from "lucide-react";
 
@@ -24,6 +24,7 @@ interface MessageInputProps {
     setMessage: (message: string) => void;
     onAgentChange?: (agent: string) => void;
     onSend: (message: string, tools: PromptData["tools"], files?: File[]) => void;
+    nodes?: NodeData[];
 }
 
 // What do you think about GitPaid as an idea where developers earn rewards automatically from their code contributions and activity on Git without changing how they already work
@@ -36,7 +37,8 @@ export default function MessageInput({
     setMessage,
     onSend,
     onAgentsLoad,
-    onAgentChange
+    onAgentChange,
+    nodes = []
 }: MessageInputProps) {
     const [tools, setTools] = useState<PromptData["tools"]>({
         deepReasoning: false,
@@ -47,10 +49,18 @@ export default function MessageInput({
     const [isDragging, setIsDragging] = useState(false);
     const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
+    const [showMentions, setShowMentions] = useState(false);
+    const [mentionSearch, setMentionSearch] = useState("");
+    const [mentionIndex, setMentionIndex] = useState(0);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const mentionsRef = useRef<HTMLDivElement>(null);
+
+    const filteredNodes = nodes.filter(node => 
+        (node.pageSlug || node.pageName || "").toLowerCase().includes(mentionSearch.toLowerCase())
+    );
 
     const handleSend = () => {
         if ((message.trim() || uploadedFiles.length > 0) && !isProcessing) {
@@ -139,7 +149,27 @@ export default function MessageInput({
             const scrollHeight = textareaRef.current.scrollHeight;
             textareaRef.current.style.height = `${Math.min(scrollHeight, 200)}px`;
         }
+
+        // Handle mention logic
+        const lastChar = message[message.length - 1];
+        const lastWord = message.split(/\s/).pop() || "";
+
+        if (lastWord.startsWith("@")) {
+            setShowMentions(true);
+            setMentionSearch(lastWord.slice(1));
+        } else {
+            setShowMentions(false);
+        }
     }, [message]);
+
+    const selectMention = (node: any) => {
+        const words = message.split(/\s/);
+        words.pop(); // remove the @part
+        const newMsg = [...words, "@" + (node.pageSlug || node.pageName)].join(" ") + " ";
+        setMessage(newMsg);
+        setShowMentions(false);
+        textareaRef.current?.focus();
+    };
 
     useEffect(() => {
         fetchAgents();
@@ -150,6 +180,9 @@ export default function MessageInput({
         const handleClickOutside = (e: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
                 setIsModelDropdownOpen(false);
+            }
+            if (mentionsRef.current && !mentionsRef.current.contains(e.target as Node)) {
+                setShowMentions(false);
             }
         };
 
@@ -188,7 +221,20 @@ export default function MessageInput({
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
                         onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
+                            if (showMentions && filteredNodes.length > 0) {
+                                if (e.key === "ArrowDown") {
+                                    e.preventDefault();
+                                    setMentionIndex(prev => (prev + 1) % filteredNodes.length);
+                                } else if (e.key === "ArrowUp") {
+                                    e.preventDefault();
+                                    setMentionIndex(prev => (prev - 1 + filteredNodes.length) % filteredNodes.length);
+                                } else if (e.key === "Enter" || e.key === "Tab") {
+                                    e.preventDefault();
+                                    selectMention(filteredNodes[mentionIndex]);
+                                } else if (e.key === "Escape") {
+                                    setShowMentions(false);
+                                }
+                            } else if (e.key === "Enter" && !e.shiftKey) {
                                 e.preventDefault();
                                 handleSend();
                             }
@@ -197,6 +243,33 @@ export default function MessageInput({
                         style={{ border: "none", outline: "none", padding: "6px 8px", fontSize: "inherit", boxShadow: "none" }}
                         className="w-full bg-transparent text-white/90 text-[13px] sm:text-[13.5px]! leading-relaxed resize-none placeholder:text-white/25 custom-scrollbar min-h-[40px] sm:min-h-[44px]"
                     />
+
+                    {/* Mentions Dropdown */}
+                    <AnimatePresence>
+                        {showMentions && filteredNodes.length > 0 && (
+                            <motion.div
+                                ref={mentionsRef}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 10 }}
+                                className="absolute bottom-full left-0 mb-2 w-64 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[100]"
+                            >
+                                <div className="p-1 max-h-48 overflow-y-auto custom-scrollbar">
+                                    {filteredNodes.map((node, i) => (
+                                        <div
+                                            key={node.uid}
+                                            onClick={() => selectMention(node)}
+                                            onMouseEnter={() => setMentionIndex(i)}
+                                            className={`flex flex-col px-3 py-2 rounded-lg cursor-pointer transition-colors ${mentionIndex === i ? "bg-white/10" : "hover:bg-white/5"}`}
+                                        >
+                                            <span className="text-xs font-medium text-white/90">{node.pageName || node.title}</span>
+                                            <span className="text-[10px] text-white/40 font-mono">{node.pageSlug}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     {/* File Previews */}
                     <AnimatePresence>

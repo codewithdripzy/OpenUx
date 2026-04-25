@@ -10,6 +10,8 @@ import { MultiBranchView } from "@/components/MultiBranchView";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { NodeData, AgentData, ChatData, NodeThinkingData } from "@/core/interfaces/data";
 import { useToast } from "@/hooks/use-toast";
+import { FaFileExport } from "react-icons/fa6";
+import { PiExport } from "react-icons/pi";
 
 function WorkspaceContent() {
     const searchParams = useSearchParams();
@@ -80,6 +82,18 @@ function WorkspaceContent() {
 
     const handleNodeOpen = (nodeId: string) => {
         setExpandedNodes(prev => ({ ...prev, [nodeId]: !prev[nodeId] }));
+        
+        const node = project?.nodes?.find(n => n.uid === nodeId);
+        if (node) {
+            const route = node.pageSlug || node.pageName || node.title;
+            if (!route) return;
+            
+            setMessage(prev => {
+                if (prev.includes(route)) return prev;
+                const prefix = prev.trim() ? (prev.endsWith(" ") ? "" : " ") : "";
+                return `${prev}${prefix}/${route} `;
+            });
+        }
     };
 
     const onSendMessage = async (payload: { nodeIds: string[], prompt: string, tools?: any, attachments?: any }) => {
@@ -106,13 +120,58 @@ function WorkspaceContent() {
         setSelectedAgent(agentId);
     };
 
+    const handleExport = () => {
+        if (!project || !project.nodes) return;
+        const exportData = `
+# Project: ${project.title || "Untitled AI Project"}
+**Prompt:** ${project.prompt || "N/A"}
+
+${project.nodes.map(node => `
+## ${node.pageName || node.title}
+- **Route:** \`${node.pageSlug}\`
+- **Design Prompt:** ${node.prompt || "N/A"}
+- **End Goal:** ${node.endGoal || "N/A"}
+
+### Rules
+${node.rules?.map(r => `- ${r}`).join("\n") || "_None_"}
+
+### Actions
+${node.actions?.map(a => `- ${a}`).join("\n") || "_None_"}
+
+---
+`).join("\n")}
+        `.trim();
+
+        const blob = new Blob([exportData], { type: "text/markdown" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${(project.title || "project").toLowerCase().replace(/\s+/g, "-")}-detailed-prompts.md`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success("Project Exported", "Detailed prompts have been downloaded.");
+    };
+
     const hasConnectedNodes = project?.nodes && project.nodes.length > 0;
 
     return (
         <div className="flex flex-col h-screen bg-[#0a0a0a] text-white">
             <LoadingOverlay isVisible={isGenerating} />
-            
+
             <div className="flex-1 flex flex-col h-full relative overflow-hidden">
+                {/* Header/Controls */}
+                <div className="absolute top-6 right-6 z-[100] flex items-center gap-3">
+                    {project && (
+                        <button
+                            onClick={handleExport}
+                            className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all text-[13px] font-semibold backdrop-blur-md group"
+                        >
+                            <PiExport size={14} />
+                            Export Project
+                        </button>
+                    )}
+                </div>
+
                 <div className="absolute left-0 top-0 w-full h-full overflow-auto">
                     <ChatCanvas
                         activeChat={project}
@@ -141,6 +200,7 @@ function WorkspaceContent() {
                             onAgentsLoad={setAgents}
                             onAgentChange={onAgentChange}
                             onSend={() => onSendMessage({ nodeIds: activeNodes, prompt: message })}
+                            nodes={project?.nodes || []}
                         />
                     </div>
                 )}

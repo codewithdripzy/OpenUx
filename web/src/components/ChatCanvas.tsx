@@ -289,16 +289,7 @@ function ChatCanvas({ activeChat, nodes, activeNodes, processingNodeIds, thinkin
                             </div>
                         </div>
                         <div className='flex items-center justify-center gap-2'>
-                            {!isExpanded(node.uid) && <button 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onNodeOpen?.(node.uid);
-                                }}
-                                className="hidden group-hover:flex items-center gap-1.5 text-[11px] px-2 py-1 bg-white/5 hover:bg-white/10 rounded-md transition-colors"
-                            >
-                                <ExternalLink size={11} />
-                                View
-                            </button>}
+
                             <div className='flex items-center gap-[5px]'>
                                 {node.parents && node.parents.length > 0 && <div className="relative">
                                     <div className="flex items-center justify-center size-7 cursor-pointer hover:bg-white/5 rounded-full transition-colors" onClick={(e) => {
@@ -429,17 +420,17 @@ function ChatCanvas({ activeChat, nodes, activeNodes, processingNodeIds, thinkin
                             }}
                             className="flex items-center gap-1.5 text-[11px] font-semibold text-blue-400 hover:text-blue-300 transition-colors"
                         >
-                            <ExternalLink size={13} />
-                            Full Chat
+                            <Plus size={13} />
+                            Add to chat
                         </button>
                     </div>}
 
                     <div className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 flex items-center'>
-                        <div className='flex justify-center items-center size-8 bg-[#121212] rounded-full border border-white/10 cursor-pointer hover:bg-white/5 hover:border-white/20 transition-all shadow-xl group' onClick={(e) => {
+                        <div className='flex justify-center items-center size-6.5 bg-[#121212] rounded-full border border-white/10 cursor-pointer hover:bg-white/5 hover:border-white/20 transition-all shadow-xl group' onClick={(e) => {
                             e.stopPropagation();
                             setShowTool(showTool === node.uid ? null : node.uid)
                         }}>
-                            <Plus size={16} className="text-white/60 group-hover:text-white transition-colors" />
+                            <Plus size={14} className="text-white/60 group-hover:text-white transition-colors" />
                         </div>
                     </div>
 
