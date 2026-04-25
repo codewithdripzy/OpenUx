@@ -219,7 +219,7 @@ function ChatCanvas({ activeChat, nodes, activeNodes, processingNodeIds, thinkin
     const branchNode = async (nodeId: string) => {
         try {
             if (!chatId) return toast.error("Conversation not found", "The requested conversation does not exist, has been deleted, or you do not have access to it, create a new conversation to continue.");
-            
+
             // Check plan limits before branching
             if (activeChat) {
                 const { allowed, message } = canBranchNode(activeChat);
@@ -228,7 +228,7 @@ function ChatCanvas({ activeChat, nodes, activeNodes, processingNodeIds, thinkin
                     return;
                 }
             }
-            
+
             const { success, message, data } = await nodeService.branchNode(chatId, nodeId);
             if (!success) {
                 toast.error(message);
@@ -342,7 +342,7 @@ function ChatCanvas({ activeChat, nodes, activeNodes, processingNodeIds, thinkin
                             </div>
                         </div>
                         <div className='flex items-center justify-center gap-3'>
-                            {!isExpanded(node.uid) && <button 
+                            {!isExpanded(node.uid) && <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onNodeOpen?.(node.uid);
@@ -359,7 +359,7 @@ function ChatCanvas({ activeChat, nodes, activeNodes, processingNodeIds, thinkin
                                 {/* <div className='cursor-pointer'>
                                         <Play size={14} />
                                     </div> */}
-                                {node.parents.length > 0 && <div className="relative">
+                                {node.parents && node.parents.length > 0 && <div className="relative">
                                     <div className="flex items-center justify-center size-[22px] cursor-pointer hover:bg-[#454545] rounded-full" onClick={(e) => {
                                         e.stopPropagation();
                                         setShowDeleteModal(showDeleteModal === node.uid ? null : node.uid)
@@ -370,7 +370,7 @@ function ChatCanvas({ activeChat, nodes, activeNodes, processingNodeIds, thinkin
                                         <div className="absolute top-full left-full flex items-center justify-center w-[200px] rounded-[15px] bg-[#333333] p-[5px] z-1000">
                                             <div className="flex justify-start items-center gap-2.5 hover:bg-red-500/5 text-red-500 p-2.5 w-full rounded-[10px] cursor-pointer text-[12px]" onClick={(e) => {
                                                 e.stopPropagation();
-                                                
+
                                                 setActiveProcessing("deleting");
                                                 deleteNode(node.uid);
                                                 // Handle delete action
@@ -395,12 +395,12 @@ function ChatCanvas({ activeChat, nodes, activeNodes, processingNodeIds, thinkin
                         <div className="flex flex-col gap-4 bg-[#171717] p-3 w-full rounded-lg min-h-[100px]">
                             {/* <div>No Conversation Yet</div> */}
                             {/* Based on workstudio platform, user is asking about integrations and workflows, user needs help navigating around the platform */}
-                            {node.context && node.messages.length > 0 && <q className="text-[#ababab] text-[11px] italic">{node.context}</q>}
+                            {node.context && node.messages && node.messages.length > 0 && <q className="text-[#ababab] text-[11px] italic">{node.context}</q>}
                             {node.messages && node.messages.length > 0 ? <div className="flex flex-col gap-4">
                                 {node.messages.map((message, index) => {
                                     const messageKey = message.id || `${node.uid}-${index}`;
                                     const shouldAnimate = shouldAnimateMessage(messageKey, message.sender);
-                                    
+
                                     return (
                                         <div key={messageKey} className="flex flex-col gap-1">
                                             <div className="flex items-center gap-2">
@@ -409,8 +409,8 @@ function ChatCanvas({ activeChat, nodes, activeNodes, processingNodeIds, thinkin
                                             </div>
                                             <p className="text-[12px] text-[#aaa] leading-[18px] ml-3.5">
                                                 {shouldAnimate ? (
-                                                    <TypewriterText 
-                                                        text={message.content.length > 100 ? message.content.slice(0, 100) + "..." : message.content} 
+                                                    <TypewriterText
+                                                        text={message.content.length > 100 ? message.content.slice(0, 100) + "..." : message.content}
                                                         onComplete={() => markMessageAnimated(messageKey)}
                                                     />
                                                 ) : (
@@ -478,7 +478,7 @@ function ChatCanvas({ activeChat, nodes, activeNodes, processingNodeIds, thinkin
                     </div>}
                     {isExpanded(node.uid) && <div className="flex items-center justify-between w-full px-5 mb-1">
                         <span className="text-[10px] text-[#666]">Last updated {moment(node.updatedAt).fromNow()}</span>
-                        <button 
+                        <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onNodeOpen?.(node.uid);
@@ -515,7 +515,7 @@ function ChatCanvas({ activeChat, nodes, activeNodes, processingNodeIds, thinkin
                         show={showTool === node.uid}
                         selectedNodes={activeNodes}
                         onClose={() => setShowTool(null)}
-                        isDeletable={node.parents.length > 0}
+                        isDeletable={node.parents && node.parents.length > 0}
                         onSelect={(tool: string) => handleToolSelect(tool, node.uid)}
                     />
                 </div>
@@ -568,7 +568,7 @@ function ChatCanvas({ activeChat, nodes, activeNodes, processingNodeIds, thinkin
                             </div>
                         </div>
                         <p className="text-gray-400 text-[13px] mb-6">
-                            You&apos;ve reached the limit of 5 thought branches per chat on the free plan. 
+                            You&apos;ve reached the limit of 5 thought branches per chat on the free plan.
                             Upgrade to Pro to create unlimited branches and explore more ideas.
                         </p>
                         <div className="flex gap-3">

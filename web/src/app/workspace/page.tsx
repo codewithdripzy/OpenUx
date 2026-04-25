@@ -91,7 +91,7 @@ function WorkspaceContent() {
             setMessage(prev => {
                 if (prev.includes(route)) return prev;
                 const prefix = prev.trim() ? (prev.endsWith(" ") ? "" : " ") : "";
-                return `${prev}${prefix}/${route} `;
+                return `${prev}${prefix}@${route} `;
             });
         }
     };
